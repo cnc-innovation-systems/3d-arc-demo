@@ -42,6 +42,32 @@
     .brandHeader{display:flex;align-items:center;gap:10px;margin-bottom:4px}
     .brandLogo{width:145px;max-width:100%;height:auto;display:block}
     .brandText{font-size:11px;color:#8fe6ff;text-transform:uppercase;letter-spacing:.7px;line-height:1.25}
+@keyframes pulseGlow {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 rgba(80,180,255,0);
+  }
+
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 12px rgba(80,180,255,0.90),
+      0 0 24px rgba(80,180,255,0.60),
+      0 0 40px rgba(80,180,255,0.35);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 rgba(80,180,255,0);
+  }
+}
+
+#loadBtn {
+  animation: pulseGlow 2.5s infinite;
+}
+#loadBtn{animation:pulse 2.5s infinite;}
 
     .error{color:#ffcf6e;font-size:12px;min-height:18px;white-space:pre-wrap}
 
@@ -74,7 +100,7 @@
         Auto tolerance from bounding box
       </label>
       <label style="grid-column:1/-1">Auto coefficient
-        <input id="autoToleranceCoeff" type="number" value="0.001" step="0.0001" min="0.00001">
+        <input id="autoToleranceCoeff" type="number" value="0.02" step="0.02" min="0.00001">
       </label>
       <label style="grid-column:1/-1">Arc fitting tolerance (mm)
         <input id="arcTolerance" type="number" value="0.07" step="0.005" min="0.001">
@@ -82,7 +108,13 @@
       <label style="grid-column:1/-1">Computed tolerance
         <input id="computedTolerance" type="text" value="-" readonly>
       </label>
-      <button type="button" id="loadBtn" style="grid-column:1/-1">Load basic ISO toolpath</button>
+      <button type="button" id="loadBtn">
+        Load basic ISO toolpath
+      </button>
+
+    <div id="startHint">
+       ← Start here
+      </div>
       <button id="analyzeBtn" style="grid-column:1/-1">Analyze → Public Gxx version</button>
       <input id="fileInput" type="file" accept=".txt,.nc,.iso,.cnc,.tap,.mpf,.spf" style="display:none" /></div>
     <div class="card">
@@ -1611,6 +1643,7 @@ if (arcToleranceEl) {
 $('analyzeBtn').onclick = () => { try { analyze(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } };
 $('loadBtn').onclick = () => $('fileInput').click();
 $('fileInput').onchange = event => {
+  loadBtn && (loadBtn.style.animation='none');
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
