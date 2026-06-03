@@ -42,38 +42,28 @@
     .brandHeader{display:flex;align-items:center;gap:10px;margin-bottom:4px}
     .brandLogo{width:145px;max-width:100%;height:auto;display:block}
     .brandText{font-size:11px;color:#8fe6ff;text-transform:uppercase;letter-spacing:.7px;line-height:1.25}
-@keyframes pulseGlow {
-  0% {
-    transform: scale(1);
-    box-shadow:
-      0 0 0 rgba(80,180,255,0);
-  }
 
-  50% {
-    transform: scale(1.04);
-    box-shadow:
-      0 0 12px rgba(80,180,255,0.90),
-      0 0 24px rgba(80,180,255,0.60),
-      0 0 40px rgba(80,180,255,0.35);
-  }
 
-  100% {
-    transform: scale(1);
-    box-shadow:
-      0 0 0 rgba(80,180,255,0);
-  }
-}
-
-#loadBtn {
-  animation: pulseGlow 2.5s infinite;
-}
-#loadBtn{animation:pulse 2.5s infinite;}
+    .highlightStats{grid-column:1/-1;margin:2px 0 2px}
+    .reductionCard{border-color:rgba(80,200,255,.82)!important;box-shadow:0 0 18px rgba(80,200,255,.20);background:rgba(8,22,32,.88)!important}
+    .reductionCard .label{color:#8fe6ff}
+    .reductionCard .value{font-size:18px;line-height:1.25;color:#dff8ff;text-shadow:0 0 10px rgba(80,200,255,.55)}
+    .advancedSettings{margin-top:4px}
 
     .error{color:#ffcf6e;font-size:12px;min-height:18px;white-space:pre-wrap}
 
     .exitVideoBtn{position:absolute;top:12px;right:16px;z-index:30;display:none;background:rgba(12,17,22,.82);border:1px solid rgba(130,160,190,.45);color:#e6edf3;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;pointer-events:auto}
     
-  </style>
+  
+@keyframes pulseGlow {
+  0% { transform: scale(1); box-shadow:0 0 0 rgba(80,180,255,0);}
+  50% { transform: scale(1.04); box-shadow:0 0 12px rgba(80,180,255,.9),0 0 24px rgba(80,180,255,.6),0 0 40px rgba(80,180,255,.35);}
+  100% { transform: scale(1); box-shadow:0 0 0 rgba(80,180,255,0);}
+}
+#loadBtn{animation:pulseGlow 2.5s infinite;}
+#startHint{text-align:center;color:#8fe6ff;font-size:12px;margin-top:4px;opacity:.9;}
+
+</style>
 </head>
 <body>
 <div class="app">
@@ -89,12 +79,42 @@
     <textarea id="program"></textarea>
     <div class="buttons">
       <button class="primary" id="parseBtn">Calculate / Apply</button><button id="editIsoBtn">Show ISO</button>
+<div id="startHint">← Start here</div>
       <button id="playBtn">Play</button><button id="pauseBtn">Pause</button>
       <button id="resetBtn">Reset view</button><button id="gridBtn">Grid ON/OFF</button>
       <button class="warn" id="sampleBtn">Sample program</button><button id="pointsBtn">Points ON/OFF</button>
       <label style="grid-column:1/-1">Animation speed
         <input id="speedSlider" type="range" min="0.25" max="5" value="1" step="0.25">
       </label>
+      
+      <div class="status highlightStats">
+        <div class="card">
+          <div class="label">Gxx functions</div>
+          <div class="value" id="g23Count">0</div>
+        </div>
+        <div class="card reductionCard">
+          <div class="label">Actual reduction</div>
+          <div class="value" id="reductionInfo">-</div>
+        </div>
+      </div>
+<button type="button" id="loadBtn" style="grid-column:1/-1">Load basic ISO toolpath</button>
+      <button id="analyzeBtn" style="grid-column:1/-1">Analyze → Public Gxx version</button>
+      <input id="fileInput" type="file" accept=".txt,.nc,.iso,.cnc,.tap,.mpf,.spf" style="display:none" /></div>
+    <div class="card">
+      <div class="label">Simulated tool</div>
+      <div style="display:grid;gap:8px;font-size:12px">
+        <div style="font-size:12px;color:#d7f7ff">Ball end mill + BT40 holder</div>
+        <label>Tool Ø
+          <input id="toolDiameter" type="number" value="12" step="0.1" min="0.1">
+        </label>
+      </div>
+    </div>
+    <div class="status"><div class="card"><div class="label">Position</div><div class="value" id="pos">X0 Y0 Z0</div></div><div class="card"><div class="label">Active block</div><div class="value" id="block">-</div></div><div class="card"><div class="label">Mode</div><div class="value" id="mode">G90 G17 G94</div></div><div class="card"><div class="label">Toolpaths</div><div class="value" id="count">0</div></div></div>
+    
+    <div class="card advancedSettings">
+      <div class="label">Advanced settings</div>
+      <div class="buttons">
+
       <label style="grid-column:1/-1;display:flex;align-items:center;gap:8px">
         <input id="autoTolerance" type="checkbox" checked style="width:auto;margin:0">
         Auto tolerance from bounding box
@@ -108,25 +128,9 @@
       <label style="grid-column:1/-1">Computed tolerance
         <input id="computedTolerance" type="text" value="-" readonly>
       </label>
-      <button type="button" id="loadBtn">
-        Load basic ISO toolpath
-      </button>
-
-    <div id="startHint">
-       ← Start here
-      </div>
-      <button id="analyzeBtn" style="grid-column:1/-1">Analyze → Public Gxx version</button>
-      <input id="fileInput" type="file" accept=".txt,.nc,.iso,.cnc,.tap,.mpf,.spf" style="display:none" /></div>
-    <div class="card">
-      <div class="label">Simulated tool</div>
-      <div style="display:grid;gap:8px;font-size:12px">
-        <div style="font-size:12px;color:#d7f7ff">Ball end mill + BT40 holder</div>
-        <label>Tool Ø
-          <input id="toolDiameter" type="number" value="12" step="0.1" min="0.1">
-        </label>
       </div>
     </div>
-    <div class="status"><div class="card"><div class="label">Position</div><div class="value" id="pos">X0 Y0 Z0</div></div><div class="card"><div class="label">Active block</div><div class="value" id="block">-</div></div><div class="card"><div class="label">Mode</div><div class="value" id="mode">G90 G17 G94</div></div><div class="card"><div class="label">Toolpaths</div><div class="value" id="count">0</div></div><div class="card"><div class="label">Gxx functions</div><div class="value" id="g23Count">0</div></div><div class="card"><div class="label">Actual reduction</div><div class="value" id="reductionInfo">-</div></div></div>
+
     <div class="error" id="error"></div>
   </div>
   <div id="viewer">
@@ -1643,7 +1647,6 @@ if (arcToleranceEl) {
 $('analyzeBtn').onclick = () => { try { analyze(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } };
 $('loadBtn').onclick = () => $('fileInput').click();
 $('fileInput').onchange = event => {
-  loadBtn && (loadBtn.style.animation='none');
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
