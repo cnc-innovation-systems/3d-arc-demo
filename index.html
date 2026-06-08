@@ -44,11 +44,46 @@
     .brandText{font-size:11px;color:#8fe6ff;text-transform:uppercase;letter-spacing:.7px;line-height:1.25}
 
 
-    .highlightStats{grid-column:1/-1;margin:2px 0 2px}
-    .reductionCard{border-color:rgba(80,200,255,.82)!important;box-shadow:0 0 18px rgba(80,200,255,.20);background:rgba(8,22,32,.88)!important}
-    .reductionCard .label{color:#8fe6ff}
-    .reductionCard .value{font-size:18px;line-height:1.25;color:#dff8ff;text-shadow:0 0 10px rgba(80,200,255,.55)}
-    .advancedSettings{margin-top:4px}
+    .reductionOverlay{
+      position:absolute;
+      top:286px;
+      right:16px;
+      width:520px;
+      max-width:calc(50% - 28px);
+      height:34px;
+      z-index:12;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 14px;
+      box-sizing:border-box;
+      border:1px solid rgba(80,220,255,.88);
+      border-radius:10px;
+      background:linear-gradient(90deg,rgba(5,12,20,.92),rgba(8,35,52,.92),rgba(5,12,20,.92));
+      color:#f7fbff;
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      box-shadow:0 0 12px rgba(80,220,255,.34),0 0 26px rgba(80,220,255,.18),inset 0 0 16px rgba(80,220,255,.08);
+      animation:reductionBannerGlow 2.8s ease-in-out infinite;
+    }
+    .reductionOverlay .pct{
+      color:#67e8ff;
+      text-shadow:0 0 8px rgba(80,220,255,.95),0 0 18px rgba(80,220,255,.55);
+      margin-left:6px;
+      animation:reductionPctSpark 1.8s ease-in-out infinite;
+    }
+    @keyframes reductionBannerGlow{
+      0%,100%{box-shadow:0 0 10px rgba(80,220,255,.24),0 0 22px rgba(80,220,255,.12),inset 0 0 12px rgba(80,220,255,.05)}
+      50%{box-shadow:0 0 18px rgba(80,220,255,.62),0 0 38px rgba(80,220,255,.30),inset 0 0 22px rgba(80,220,255,.14)}
+    }
+    @keyframes reductionPctSpark{
+      0%,100%{filter:brightness(1)}
+      50%{filter:brightness(1.45)}
+    }
 
     .error{color:#ffcf6e;font-size:12px;min-height:18px;white-space:pre-wrap}
 
@@ -86,35 +121,6 @@
       <label style="grid-column:1/-1">Animation speed
         <input id="speedSlider" type="range" min="0.25" max="5" value="1" step="0.25">
       </label>
-      
-      <div class="status highlightStats">
-        <div class="card">
-          <div class="label">Gxx functions</div>
-          <div class="value" id="g23Count">0</div>
-        </div>
-        <div class="card reductionCard">
-          <div class="label">Actual reduction</div>
-          <div class="value" id="reductionInfo">-</div>
-        </div>
-      </div>
-<button type="button" id="loadBtn" style="grid-column:1/-1">Load basic ISO toolpath</button>
-      <button id="analyzeBtn" style="grid-column:1/-1">Analyze → Public Gxx version</button>
-      <input id="fileInput" type="file" accept=".txt,.nc,.iso,.cnc,.tap,.mpf,.spf" style="display:none" /></div>
-    <div class="card">
-      <div class="label">Simulated tool</div>
-      <div style="display:grid;gap:8px;font-size:12px">
-        <div style="font-size:12px;color:#d7f7ff">Ball end mill + BT40 holder</div>
-        <label>Tool Ø
-          <input id="toolDiameter" type="number" value="12" step="0.1" min="0.1">
-        </label>
-      </div>
-    </div>
-    <div class="status"><div class="card"><div class="label">Position</div><div class="value" id="pos">X0 Y0 Z0</div></div><div class="card"><div class="label">Active block</div><div class="value" id="block">-</div></div><div class="card"><div class="label">Mode</div><div class="value" id="mode">G90 G17 G94</div></div><div class="card"><div class="label">Toolpaths</div><div class="value" id="count">0</div></div></div>
-    
-    <div class="card advancedSettings">
-      <div class="label">Advanced settings</div>
-      <div class="buttons">
-
       <label style="grid-column:1/-1;display:flex;align-items:center;gap:8px">
         <input id="autoTolerance" type="checkbox" checked style="width:auto;margin:0">
         Auto tolerance from bounding box
@@ -128,9 +134,19 @@
       <label style="grid-column:1/-1">Computed tolerance
         <input id="computedTolerance" type="text" value="-" readonly>
       </label>
+      <button type="button" id="loadBtn" style="grid-column:1/-1">Load basic ISO toolpath</button>
+      <button id="analyzeBtn" style="grid-column:1/-1">Analyze → Public Gxx version</button>
+      <input id="fileInput" type="file" accept=".txt,.nc,.iso,.cnc,.tap,.mpf,.spf" style="display:none" /></div>
+    <div class="card">
+      <div class="label">Simulated tool</div>
+      <div style="display:grid;gap:8px;font-size:12px">
+        <div style="font-size:12px;color:#d7f7ff">Ball end mill + BT40 holder</div>
+        <label>Tool Ø
+          <input id="toolDiameter" type="number" value="12" step="0.1" min="0.1">
+        </label>
       </div>
     </div>
-
+    <div class="status"><div class="card"><div class="label">Position</div><div class="value" id="pos">X0 Y0 Z0</div></div><div class="card"><div class="label">Active block</div><div class="value" id="block">-</div></div><div class="card"><div class="label">Mode</div><div class="value" id="mode">G90 G17 G94</div></div><div class="card"><div class="label">Toolpaths</div><div class="value" id="count">0</div></div><div class="card"><div class="label">Gxx functions</div><div class="value" id="g23Count">0</div></div><div class="card"><div class="label">Actual reduction</div><div class="value" id="reductionInfo">-</div></div></div>
     <div class="error" id="error"></div>
   </div>
   <div id="viewer">
@@ -149,7 +165,9 @@
       <div id="cinemaBig" class="cinemaBig">Same toolpath</div>
       <div id="cinemaSub" class="cinemaSub">Cleaner CNC program</div>
     </div>
-    <div class="tickerWrap">
+    
+    <div id="reductionOverlay" class="reductionOverlay">Actual reduction : -</div>
+<div class="tickerWrap">
       <div class="ticker">
         <div class="tickerTrack">
           <span class="tickerItem">Same toolpath</span>
@@ -206,6 +224,7 @@ const isoCursorEl = $('isoCursor');
 const g23LinesEl = $('g23Lines');
 const g23CursorEl = $('g23Cursor');
 const reductionInfoEl = $('reductionInfo');
+const reductionOverlayEl = $('reductionOverlay');
 const toolDiameterEl = $('toolDiameter');
 const speedSliderEl = $('speedSlider');
 const arcToleranceEl = $('arcTolerance');
@@ -459,6 +478,24 @@ function buildGraphics() {
   }
   buildG23CoordinateMarkers();
 }
+
+function getToolDisplayRadius() {
+  const d = toolDiameterEl ? (Number(toolDiameterEl.value) || 12) : 12;
+  return Math.max(0.05, d / 2);
+}
+
+function getToolDisplayPoint(p) {
+  // Programmed point = ball end mill tip.
+  // Visual tool shifted along +Z by ball radius.
+  return new THREE.Vector3(p.x, p.y, p.z + getToolDisplayRadius());
+}
+
+function lockToolVertical() {
+  if (!toolObject) return;
+  toolObject.rotation.set(0, 0, 0);
+  toolObject.quaternion.set(0, 0, 0, 1);
+}
+
 function createTool() {
   if (toolObject) { scene.remove(toolObject); toolObject.traverse(disposeObject); }
   const type = 'ball', d = Math.max(0.1, Number(toolDiameterEl.value) || 12), len = 80;
@@ -469,6 +506,8 @@ function createTool() {
   if (type === 'ball') group.add(new THREE.Mesh(new THREE.SphereGeometry(d / 2, 32, 16), mat));
   else { const end = new THREE.Mesh(new THREE.CylinderGeometry(d / 2, d / 2, Math.max(1, d * 0.2), 32), mat); end.rotation.x = Math.PI / 2; group.add(end); }
   toolObject = group; scene.add(group);
+
+  lockToolVertical();
 }
 function pointAt(progress) {
   let allow = totalLength * progress, used = 0;
@@ -487,7 +526,7 @@ function pointAt(progress) {
 }
 function updateAnim() {
   const r = pointAt(drawProgress);
-  if (toolObject) toolObject.position.copy(r.p);
+  if (toolObject) { toolObject.position.copy(getToolDisplayPoint(r.p)); lockToolVertical(); }
 
   // Effet vidéo : micro-zoom automatique pendant les arcs G2/G3.
   // Le zoom revient progressivement à 1 hors arc.
@@ -1360,12 +1399,24 @@ function countUsefulLinesForDemo(list) {
 function updateReductionFromOptimized() {
   const left = countUsefulLinesForDemo(programLines);
   const right = countUsefulLinesForDemo(correctedLines);
+
   if (!left || !right) {
-    reductionInfoEl.textContent = '-';
+    if (reductionInfoEl) reductionInfoEl.textContent = '-';
+    if (reductionOverlayEl) reductionOverlayEl.innerHTML = 'Actual reduction : -';
     return;
   }
+
   const gain = Math.max(0, 100 * (1 - right / left));
-  reductionInfoEl.textContent = left + ' → ' + right + ' lines (−' + gain.toFixed(1) + '%)';
+  const pct = '−' + gain.toFixed(1) + '%';
+
+  if (reductionInfoEl) {
+    reductionInfoEl.textContent = left + ' → ' + right + ' lines (' + pct + ')';
+  }
+
+  if (reductionOverlayEl) {
+    reductionOverlayEl.innerHTML =
+      'Actual reduction : ' + left + ' → ' + right + ' lines <span class="pct">(' + pct + ')</span>';
+  }
 }
 
 function buildCorrectedIsoFromG23() {
