@@ -85,6 +85,26 @@
       50%{filter:brightness(1.45)}
     }
 
+
+    .exampleRow{
+      grid-column:1/-1;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    #exampleSelect{
+      animation:exampleGlow 2.7s ease-in-out infinite;
+      border:1px solid rgba(80,220,255,.88)!important;
+      box-shadow:0 0 10px rgba(80,220,255,.28);
+      font-weight:800;
+      text-align:center;
+      cursor:pointer;
+    }
+    @keyframes exampleGlow{
+      0%,100%{box-shadow:0 0 8px rgba(80,220,255,.20)}
+      50%{box-shadow:0 0 18px rgba(80,220,255,.65),0 0 32px rgba(80,220,255,.25)}
+    }
+
     .error{color:#ffcf6e;font-size:12px;min-height:18px;white-space:pre-wrap}
 
     .exitVideoBtn{position:absolute;top:12px;right:16px;z-index:30;display:none;background:rgba(12,17,22,.82);border:1px solid rgba(130,160,190,.45);color:#e6edf3;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;pointer-events:auto}
@@ -134,7 +154,14 @@
       <label style="grid-column:1/-1">Computed tolerance
         <input id="computedTolerance" type="text" value="-" readonly>
       </label>
-      <button type="button" id="loadBtn" style="grid-column:1/-1">Load basic ISO toolpath</button>
+      <div class="exampleRow">
+        <button type="button" id="loadBtn">Load basic ISO toolpath</button>
+        <select id="exampleSelect" title="Load a built-in demonstration file">
+          <option value="">Load example ▼</option>
+          <option value="./examples/ARC_3D_D1000.NC">Example 1 - Arc 3D Ø1000</option>
+          <option value="./examples/Complex_surface.NC">Example 2 - Complex Surface</option>
+        </select>
+      </div>
       <button id="analyzeBtn" style="grid-column:1/-1">Analyze → Public Gxx version</button>
       <input id="fileInput" type="file" accept=".txt,.nc,.iso,.cnc,.tap,.mpf,.spf" style="display:none" /></div>
     <div class="card">
@@ -219,6 +246,7 @@ const modeEl = $('mode');
 const countEl = $('count');
 const g23CountEl = $('g23Count');
 const errorEl = $('error');
+const exampleSelectEl = $('exampleSelect');
 const isoLinesEl = $('isoLines');
 const isoCursorEl = $('isoCursor');
 const g23LinesEl = $('g23Lines');
@@ -1692,6 +1720,55 @@ if (autoToleranceCoeffEl) {
 if (arcToleranceEl) {
   arcToleranceEl.onchange = () => {
     try { buildCorrectedIsoFromG23(); } catch(e) { errorEl.textContent = 'Analysis failed: ' + e.message; }
+  };
+}
+
+
+async function loadExampleProgram(url, label) {
+  if (!url) return;
+
+  try {
+    errorEl.textContent = 'Loading example: ' + label + '...';
+
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Unable to load example file (' + response.status + ')');
+
+    const text = await response.text();
+
+    textarea.value = text;
+    parseProgram(text);
+
+    if (typeof autoAnalyzeAfterExternalLoad === 'function') {
+      autoAnalyzeAfterExternalLoad(label);
+    } else {
+      try { buildCorrectedIsoFromG23(); } catch(e) {}
+    }
+
+    if (loadBtn) {
+      loadBtn.style.animation = 'none';
+      loadBtn.style.boxShadow = 'none';
+    }
+
+    const startHint = document.getElementById('startHint');
+    if (startHint) startHint.style.display = 'none';
+
+    if (exampleSelectEl) exampleSelectEl.style.animation = 'none';
+
+    errorEl.textContent = 'Example loaded: ' + label;
+  } catch (e) {
+    errorEl.textContent = 'Example loading failed: ' + e.message;
+  }
+}
+
+
+
+if (exampleSelectEl) {
+  exampleSelectEl.onchange = () => {
+    const url = exampleSelectEl.value;
+    const label = exampleSelectEl.options[exampleSelectEl.selectedIndex].text;
+    if (!url) return;
+    loadExampleProgram(url, label);
+    exampleSelectEl.selectedIndex = 0;
   };
 }
 
