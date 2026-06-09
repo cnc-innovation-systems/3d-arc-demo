@@ -199,6 +199,7 @@
         <button type="button" id="loadBtn">Load basic ISO toolpath</button>
         <select id="exampleSelect" title="Load a built-in demonstration file">
           <option value="">Load example ▼</option>
+          <option value="./examples/video_base_3_arcs.nc">Default - Video base 3 arcs</option>
           <option value="./examples/ARC_3D_D1000.NC">Example 1 - Arc 3D Ø1000</option>
           <option value="./examples/Complex_surface.NC">Example 2 - Complex Surface</option>
         </select>
@@ -310,7 +311,7 @@ const computedToleranceEl = $('computedTolerance');
 const cinemaMessageEl = $('cinemaMessage');
 const cinemaBigEl = $('cinemaBig');
 const cinemaSubEl = $('cinemaSub');
-textarea.value = sampleProgram;
+textarea.value = '';
 
 let path = [];
 let state = null;
@@ -1747,7 +1748,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-$('sampleBtn').onclick = () => { textarea.value = sampleProgram; selectedLine = 1; parseProgram(); buildCorrectedIsoFromG23(); };
+$('sampleBtn').onclick = () => { textarea.value = ''; selectedLine = 1; parseProgram(); buildCorrectedIsoFromG23(); };
 speedSliderEl.oninput = () => { playbackSpeed = Number(speedSliderEl.value) || 1; };
 if (arcToleranceEl) {
   arcToleranceEl.onchange = () => { try { buildCorrectedIsoFromG23(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } };
@@ -1841,6 +1842,41 @@ if (exampleSelectEl) {
   };
 }
 
+
+async function loadDefaultVideoBaseProgram() {
+  try {
+    showAnalysisOverlay('Loading default 3D arc program...');
+
+    const response = await fetch('./examples/video_base_3_arcs.nc', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Default file not found (' + response.status + ')');
+
+    const text = await response.text();
+    textarea.value = text;
+
+    selectedLine = 1;
+    parseProgram();
+    autoAnalyzeAfterExternalLoad('video_base_3_arcs.nc');
+
+    const startHint = document.getElementById('startHint');
+    if (startHint) startHint.style.display = 'none';
+
+    const loadButton = document.getElementById('loadBtn');
+    if (loadButton) {
+      loadButton.style.animation = 'none';
+      loadButton.style.boxShadow = 'none';
+    }
+  } catch (e) {
+    hideAnalysisOverlay();
+    textarea.value = sampleProgram;
+    try {
+      parseProgram();
+      buildCorrectedIsoFromG23();
+    } catch (_) {}
+    console.warn('Default video base example failed:', e);
+    errorEl.textContent = 'Default example unavailable. You can load an ISO file manually.';
+  }
+}
+
 $('analyzeBtn').onclick = () => { showAnalysisOverlay('Analyzing ISO program...'); setTimeout(() => { try { analyze(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } finally { hideAnalysisOverlay(); } }, 40); };
 $('loadBtn').onclick = () => $('fileInput').click();
 $('fileInput').onchange = event => {
@@ -1863,10 +1899,11 @@ $('fileInput').onchange = event => {
 [toolDiameterEl].forEach(el => { el.oninput = createTool; el.onchange = createTool; });
 textarea.addEventListener('keyup', () => { selectedLine = linesOf(textarea.value.slice(0, textarea.selectionStart)).length; updateOverlays(selectedLine); });
 textarea.addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); parseProgram(); buildCorrectedIsoFromG23(); } });
-try { runSelfTests(); } catch (e) { console.warn('Self-tests warning:', e); textarea.value = sampleProgram; }
+try { runSelfTests(); } catch (e) { console.warn('Self-tests warning:', e); textarea.value = ''; }
 resize();
 createTool();
 parseProgram();
+loadDefaultVideoBaseProgram();
 renderLoop();
 
 // Effet dynamique : le texte du bandeau devient bleu/lumineux lorsqu'il passe au centre
