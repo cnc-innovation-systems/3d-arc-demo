@@ -105,6 +105,47 @@
       50%{box-shadow:0 0 18px rgba(80,220,255,.65),0 0 32px rgba(80,220,255,.25)}
     }
 
+
+    .analysisOverlay{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      z-index:30;
+      min-width:280px;
+      padding:18px 24px;
+      border:1px solid rgba(80,220,255,.88);
+      border-radius:14px;
+      background:rgba(3,12,22,.88);
+      box-shadow:0 0 18px rgba(80,220,255,.42),0 0 42px rgba(80,220,255,.22),inset 0 0 18px rgba(80,220,255,.10);
+      color:#f7fbff;
+      text-align:center;
+      font-weight:800;
+      letter-spacing:.3px;
+      display:none;
+      pointer-events:none;
+    }
+    .analysisOverlay .small{
+      display:block;
+      margin-top:6px;
+      color:#8fe6ff;
+      font-size:12px;
+      font-weight:600;
+    }
+    .analysisSpinner{
+      width:28px;
+      height:28px;
+      border:3px solid rgba(143,230,255,.22);
+      border-top-color:#67e8ff;
+      border-radius:50%;
+      margin:0 auto 10px;
+      animation:spinWait .9s linear infinite;
+    }
+    @keyframes spinWait{
+      from{transform:rotate(0deg)}
+      to{transform:rotate(360deg)}
+    }
+
     .error{color:#ffcf6e;font-size:12px;min-height:18px;white-space:pre-wrap}
 
     .exitVideoBtn{position:absolute;top:12px;right:16px;z-index:30;display:none;background:rgba(12,17,22,.82);border:1px solid rgba(130,160,190,.45);color:#e6edf3;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;pointer-events:auto}
@@ -194,6 +235,12 @@
     </div>
     
     <div id="reductionOverlay" class="reductionOverlay">Actual reduction : -</div>
+
+    <div id="analysisOverlay" class="analysisOverlay">
+      <div class="analysisSpinner"></div>
+      Analyzing ISO program...
+      <span class="small">Please wait</span>
+    </div>
 <div class="tickerWrap">
       <div class="ticker">
         <div class="tickerTrack">
@@ -246,6 +293,7 @@ const modeEl = $('mode');
 const countEl = $('count');
 const g23CountEl = $('g23Count');
 const errorEl = $('error');
+const analysisOverlayEl = $('analysisOverlay');
 const exampleSelectEl = $('exampleSelect');
 const isoLinesEl = $('isoLines');
 const isoCursorEl = $('isoCursor');
@@ -1488,10 +1536,12 @@ function autoAnalyzeAfterExternalLoad(fileName) {
       try {
         buildCorrectedIsoFromG23();
         errorEl.textContent = 'ISO file loaded: ' + fileName + ' — public Gxx version generated.';
+        hideAnalysisOverlay();
       } catch (e) {
         correctedLines = programLines.map(x => ({ sourceLine: x.number, text: x.text }));
         reductionInfoEl.textContent = '-';
         updateOverlays(selectedLine);
+        hideAnalysisOverlay();
         errorEl.textContent = 'ISO file loaded: ' + fileName + '\nAutomatic analysis failed: ' + e.message;
       }
     }, 60);
@@ -1724,10 +1774,27 @@ if (arcToleranceEl) {
 }
 
 
+
+function showAnalysisOverlay(message) {
+  if (!analysisOverlayEl) return;
+  analysisOverlayEl.style.display = 'block';
+  analysisOverlayEl.innerHTML =
+    '<div class="analysisSpinner"></div>' +
+    (message || 'Analyzing ISO program...') +
+    '<span class="small">Please wait</span>';
+}
+
+function hideAnalysisOverlay() {
+  if (!analysisOverlayEl) return;
+  analysisOverlayEl.style.display = 'none';
+}
+
+
 async function loadExampleProgram(url, label) {
   if (!url) return;
 
   try {
+    showAnalysisOverlay('Loading example...');
     errorEl.textContent = 'Loading example: ' + label + '...';
 
     const response = await fetch(url, { cache: 'no-store' });
@@ -1755,7 +1822,9 @@ async function loadExampleProgram(url, label) {
     if (exampleSelectEl) exampleSelectEl.style.animation = 'none';
 
     errorEl.textContent = 'Example loaded: ' + label;
+    setTimeout(hideAnalysisOverlay, 220);
   } catch (e) {
+    hideAnalysisOverlay();
     errorEl.textContent = 'Example loading failed: ' + e.message;
   }
 }
@@ -1772,9 +1841,10 @@ if (exampleSelectEl) {
   };
 }
 
-$('analyzeBtn').onclick = () => { try { analyze(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } };
+$('analyzeBtn').onclick = () => { showAnalysisOverlay('Analyzing ISO program...'); setTimeout(() => { try { analyze(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } finally { hideAnalysisOverlay(); } }, 40); };
 $('loadBtn').onclick = () => $('fileInput').click();
 $('fileInput').onchange = event => {
+  showAnalysisOverlay('Loading ISO file...');
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -1784,9 +1854,10 @@ $('fileInput').onchange = event => {
       selectedLine = 1;
       parseProgram();
       autoAnalyzeAfterExternalLoad(file.name);
+      setTimeout(hideAnalysisOverlay, 220);
     } catch (err) { errorEl.textContent = 'ISO loading error: ' + err.message; }
   };
-  reader.onerror = () => { errorEl.textContent = 'ISO file reading error.'; };
+  reader.onerror = () => { hideAnalysisOverlay(); errorEl.textContent = 'ISO file reading error.'; };
   reader.readAsText(file);
 };
 [toolDiameterEl].forEach(el => { el.oninput = createTool; el.onchange = createTool; });
