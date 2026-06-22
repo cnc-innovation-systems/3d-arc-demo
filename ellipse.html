@@ -1931,13 +1931,6 @@ function nearestProgrammedMarkerXY(point) {
   return best ? { marker: best, distance: bestDistance } : null;
 }
 
-function buildG23CoordinateMarkers() {
-  if (g23PointsObject) {
-    pathGroup.remove(g23PointsObject);
-    disposeObject(g23PointsObject);
-    g23PointsObject = null;
-  }
-
   g23CoordinateMarkers = [];
   const keys = new Set();
   let modal = { x: 0, y: 0, z: 0 };
