@@ -1919,11 +1919,6 @@ function isEllipseMarkerText(text) {
 function isEllipseP0Text(text) { return /\(\s*P0\s*\)/i.test(String(text || '')); }
 function isEllipseP2Text(text) { return /\(\s*P2\s*\)/i.test(String(text || '')); }
 
-function isRightArcLine(text) {
-  const clean = stripComments(text || '');
-  return /(^|\s)G0?23(\s|$)/i.test(clean) || /(^|\s)GXX(\s|$)/i.test(clean) || /(^|\s)GYY(\s|$)/i.test(clean);
-}
-
 function nearestProgrammedMarkerXY(point) {
   let best = null;
   let bestDistance = Infinity;
