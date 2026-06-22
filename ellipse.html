@@ -307,6 +307,7 @@ const reductionInfoEl = $('reductionInfo');
 const reductionOverlayEl = $('reductionOverlay');
 const toolDiameterEl = $('toolDiameter');
 const speedSliderEl = $('speedSlider');
+const loadBtn = $('loadBtn');
 const arcToleranceEl = $('arcTolerance');
 const autoToleranceEl = $('autoTolerance');
 const autoToleranceCoeffEl = $('autoToleranceCoeff');
@@ -966,7 +967,7 @@ function previousXYZLineIndex(beforeIndex) {
   return -1;
 }
 
-function buildG23CoordinateMarkers() {
+function buildG23CoordinateMarkersBase() {
   if (g23PointsObject) {
     pathGroup.remove(g23PointsObject);
     disposeObject(g23PointsObject);
@@ -1050,7 +1051,7 @@ function isRightArcLine(text) {
   return /(^|\s)G0?23(\s|$)/i.test(clean) || /(^|\s)GXX(\s|$)/i.test(clean);
 }
 
-function buildSyncMap() {
+function buildSyncMapBase() {
   syncMap = [];
   if (!programmedMarkers.length || !correctedLines.length || !g23ProgramLines.length) return;
 
@@ -1521,7 +1522,7 @@ function updateG23Stats() {
   g23CountEl.textContent = String(g23LinesOnly.length);
   updateReductionFromOptimized();
 }
-function analyze() {
+function analyzeBase() {
   try {
     buildCorrectedIsoFromG23();
     errorEl.textContent = 'ISO analyzed: public Gxx version generated automatically.';
@@ -1846,7 +1847,7 @@ if (exampleSelectEl) {
 }
 
 
-async function loadDefaultVideoBaseProgram() {
+async function loadDefaultVideoBaseProgramBase() {
   try {
     showAnalysisOverlay('Loading default 3D arc program...');
 
@@ -1931,6 +1932,7 @@ function nearestProgrammedMarkerXY(point) {
   return best ? { marker: best, distance: bestDistance } : null;
 }
 
+function buildG23CoordinateMarkers() {
   g23CoordinateMarkers = [];
   const keys = new Set();
   let modal = { x: 0, y: 0, z: 0 };
