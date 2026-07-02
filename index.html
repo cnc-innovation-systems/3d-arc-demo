@@ -178,7 +178,7 @@
 <div id="startHint">← Start here</div>
       <button id="playBtn">Play</button><button id="pauseBtn">Pause</button>
       <button id="resetBtn">Reset view</button><button id="gridBtn">Grid ON/OFF</button>
-      <button class="warn" id="sampleBtn">Sample program</button><button id="pointsBtn">Points ON/OFF</button>
+      <button class="warn" id="sampleBtn">Reload Example 2</button><button id="pointsBtn">Points ON/OFF</button>
       <label style="grid-column:1/-1">Animation speed
         <input id="speedSlider" type="range" min="0.25" max="5" value="1" step="0.25">
       </label>
@@ -201,7 +201,7 @@
           <option value="">Load example ▼</option>
           <option value="./examples/video_base_3_arcs.nc">Default - Video base 3 arcs</option>
           <option value="./examples/ARC_3D_D1000.NC">Example 1 - Arc 3D Ø1000</option>
-          <option value="./examples/Complex_surface.NC">Example 2 - Complex Surface</option>
+          <option value="./examples/Complex_surface.NC" selected>Example 2 - Complex Surface</option>
         </select>
       </div>
       <button id="analyzeBtn" style="grid-column:1/-1">Analyze → Public Gxx version</button>
@@ -1847,7 +1847,7 @@ async function loadDefaultVideoBaseProgram() {
   try {
     showAnalysisOverlay('Loading default 3D arc program...');
 
-    const response = await fetch('./examples/video_base_3_arcs.nc', { cache: 'no-store' });
+    const response = await fetch('./examples/Complex_surface.NC', { cache: 'no-store' });
     if (!response.ok) throw new Error('Default file not found (' + response.status + ')');
 
     const text = await response.text();
