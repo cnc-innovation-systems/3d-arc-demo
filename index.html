@@ -199,7 +199,7 @@
         <button type="button" id="loadBtn">Load basic ISO toolpath</button>
         <select id="exampleSelect" title="Load a built-in demonstration file">
           <option value="">Load example ▼</option>
-          <option value="./examples/sphere.NC" selected>Example 1 - Sphere 45° isoparametric paths</option>
+          <option value="./examples/sphere.nc" selected>Example 1 - Sphere 45° isoparametric paths</option>
           <option value="./examples/ARC_3D_D1000.NC">Example 2 - Arc 3D Ø1000</option>
           <option value="./examples/video_base_3_arcs.nc">Example 3 - Video base 3 arcs</option>
           <option value="./examples/Complex_surface.NC">Example 4 - Complex Surface</option>
@@ -1749,7 +1749,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-$('sampleBtn').onclick = () => { loadExample('./examples/sphere.NC'); };
+$('sampleBtn').onclick = () => { loadExample('./examples/sphere.nc'); };
 speedSliderEl.oninput = () => { playbackSpeed = Number(speedSliderEl.value) || 1; };
 if (arcToleranceEl) {
   arcToleranceEl.onchange = () => { try { buildCorrectedIsoFromG23(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } };
@@ -1848,7 +1848,7 @@ async function loadDefaultVideoBaseProgram() {
   try {
     showAnalysisOverlay('Loading default 3D arc program...');
 
-    const response = await fetch('./examples/sphere.NC', { cache: 'no-store' });
+    const response = await fetch('./examples/sphere.nc', { cache: 'no-store' });
     if (!response.ok) throw new Error('Default file not found (' + response.status + ')');
 
     const text = await response.text();
