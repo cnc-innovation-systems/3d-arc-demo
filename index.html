@@ -334,6 +334,24 @@ const cinemaBigEl = $('cinemaBig');
 const cinemaSubEl = $('cinemaSub');
 textarea.value = '';
 
+// Microsoft Clarity telemetry helpers.
+// Events are anonymous and contain no NC program content or filename.
+function clarityEvent(name) {
+  try {
+    if (typeof window.clarity === 'function') window.clarity('event', name);
+  } catch (_) {}
+}
+
+function clarityTag(key, value) {
+  try {
+    if (typeof window.clarity === 'function') window.clarity('set', key, String(value));
+  } catch (_) {}
+}
+
+clarityTag('demo', '3d_arc_interpolation');
+clarityTag('demo_version', 'clarity_events_v1');
+clarityEvent('demo_opened');
+
 let path = [];
 let state = null;
 let totalLength = 1;
@@ -1663,6 +1681,9 @@ function startPlayback(videoModeLaunch = false) {
   try {
     if (!path.length) parseProgram();
 
+    clarityTag('playback_mode', videoModeLaunch ? 'video' : 'interactive');
+    clarityEvent('simulation_started');
+
     drawProgress = 0;
     g23SyncIndex = 0;
     g23LastMatchedX = null;
@@ -1729,6 +1750,7 @@ function startPlayback(videoModeLaunch = false) {
         paused = false;
         $('playBtn').textContent = 'Play';
 
+        clarityEvent('simulation_completed');
         showFinalCinemaMessage();
 
         // En mode vidéo, on laisse l'écran figé quelques secondes pour la capture.
@@ -1748,7 +1770,19 @@ function startPlayback(videoModeLaunch = false) {
 
 $('playBtn').onclick = () => startPlayback(false);
 
-$('pauseBtn').onclick = () => { if (!playing) return; paused = !paused; if (paused) { pauseStart = performance.now(); $('pauseBtn').textContent = 'Resume'; } else { pausedTotal += performance.now() - pauseStart; $('pauseBtn').textContent = 'Pause'; } };
+$('pauseBtn').onclick = () => {
+  if (!playing) return;
+  paused = !paused;
+  if (paused) {
+    pauseStart = performance.now();
+    $('pauseBtn').textContent = 'Resume';
+    clarityEvent('simulation_paused');
+  } else {
+    pausedTotal += performance.now() - pauseStart;
+    $('pauseBtn').textContent = 'Pause';
+    clarityEvent('simulation_resumed');
+  }
+};
 $('resetBtn').onclick = fitCamera;
 $('gridBtn').onclick = () => { showGrid = !showGrid; grid.visible = showGrid; axes.visible = true; };
 $('pointsBtn').onclick = () => {
@@ -1771,6 +1805,11 @@ window.addEventListener('keydown', (e) => {
 
 $('sampleBtn').onclick = () => { loadExample('./examples/sphere.nc'); };
 speedSliderEl.oninput = () => { playbackSpeed = Number(speedSliderEl.value) || 1; };
+speedSliderEl.onchange = () => {
+  playbackSpeed = Number(speedSliderEl.value) || 1;
+  clarityTag('playback_speed', playbackSpeed + 'x');
+  clarityEvent('speed_changed');
+};
 if (arcToleranceEl) {
   arcToleranceEl.onchange = () => { try { buildCorrectedIsoFromG23(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } };
   arcToleranceEl.oninput = () => { try { buildCorrectedIsoFromG23(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } };
@@ -1844,6 +1883,13 @@ async function loadExampleProgram(url, label) {
     if (exampleSelectEl) exampleSelectEl.style.animation = 'none';
 
     errorEl.textContent = 'Example loaded: ' + label;
+
+    const exampleMatch = String(label || '').match(/Example\s+(\d+)/i);
+    const exampleId = exampleMatch ? 'example_' + exampleMatch[1] : 'example_other';
+    clarityTag('last_example', exampleId);
+    clarityEvent(exampleId + '_loaded');
+    clarityEvent('example_loaded');
+
     setTimeout(hideAnalysisOverlay, 220);
   } catch (e) {
     hideAnalysisOverlay();
@@ -1898,7 +1944,19 @@ async function loadDefaultVideoBaseProgram() {
   }
 }
 
-$('analyzeBtn').onclick = () => { showAnalysisOverlay('Analyzing ISO program...'); setTimeout(() => { try { analyze(); } catch (e) { errorEl.textContent = 'Analysis failed: ' + e.message; } finally { hideAnalysisOverlay(); } }, 40); };
+$('analyzeBtn').onclick = () => {
+  showAnalysisOverlay('Analyzing ISO program...');
+  setTimeout(() => {
+    try {
+      analyze();
+      clarityEvent('public_gxx_generated');
+    } catch (e) {
+      errorEl.textContent = 'Analysis failed: ' + e.message;
+    } finally {
+      hideAnalysisOverlay();
+    }
+  }, 40);
+};
 $('loadBtn').onclick = () => $('fileInput').click();
 $('fileInput').onchange = event => {
   showAnalysisOverlay('Loading ISO file...');
@@ -1911,6 +1969,8 @@ $('fileInput').onchange = event => {
       selectedLine = 1;
       parseProgram();
       autoAnalyzeAfterExternalLoad(file.name);
+      clarityTag('program_source', 'user_file');
+      clarityEvent('nc_file_loaded');
       setTimeout(hideAnalysisOverlay, 220);
     } catch (err) { errorEl.textContent = 'ISO loading error: ' + err.message; }
   };
